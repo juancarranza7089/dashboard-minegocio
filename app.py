@@ -113,26 +113,36 @@ data_rows = raw[header_row_idx + 1:]
 df_raw = pd.DataFrame(data_rows, columns=headers)
 df_raw.columns = df_raw.columns.str.strip()
 
-col_map = {
-    "Producto":               "Producto",
-    "Tipo de Producto":       "Tipo",
-    "Unidades Vendidas":      "Unidades_Vendidas",
-    "Precio por Unidad (L.)": "Precio_Unidad",
-    "Stock que Entró":        "Stock_Entro",
-    "Mes":                    "Mes",
-    "Semana":                 "Semana",
+# Normalizar nombres de columnas (quitar tildes y espacios extra)
+import unicodedata
+def norm(s):
+    s = str(s).strip()
+    return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii").lower()
+
+col_map_norm = {
+    norm("Producto"):               "Producto",
+    norm("Tipo de Producto"):       "Tipo",
+    norm("Unidades Vendidas"):      "Unidades_Vendidas",
+    norm("Precio por Unidad (L.)"): "Precio_Unidad",
+    norm("Stock que Entro"):        "Stock_Entro",
+    norm("Stock que Entró"):        "Stock_Entro",
+    norm("Mes"):                    "Mes",
+    norm("Semana"):                 "Semana",
 }
 
-df_raw.rename(columns=col_map, inplace=True)
+df_raw.columns = [norm(c) for c in df_raw.columns]
+rename_map = {c: col_map_norm[c] for c in df_raw.columns if c in col_map_norm}
+df_raw.rename(columns=rename_map, inplace=True)
 
-missing = [c for c in col_map.values() if c not in df_raw.columns]
+required = ["Producto", "Tipo", "Unidades_Vendidas", "Precio_Unidad", "Stock_Entro", "Mes", "Semana"]
+missing = [c for c in required if c not in df_raw.columns]
 if missing:
     st.error(f"❌ Columnas faltantes en el Sheet: {missing}")
     with st.expander("Ver columnas detectadas"):
         st.write(list(df_raw.columns))
     st.stop()
 
-df = df_raw[list(col_map.values())].copy()
+df = df_raw[required].copy()
 df = df[df["Producto"].notna()]
 df = df[df["Producto"].astype(str).str.strip() != ""]
 df = df[df["Producto"].astype(str).str.strip().str.upper() != "TOTALES"]
