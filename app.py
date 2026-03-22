@@ -96,6 +96,13 @@ if isinstance(raw, str):
     st.info("💡 Verifica que el Secret `gcp_service_account` esté configurado correctamente en Streamlit Cloud.")
     st.stop()
 
+# ── DEBUG TEMPORAL ─────────────────────────────────────────────────────────
+with st.expander("🔍 DEBUG - Ver datos crudos del Sheet (borrar después)"):
+    st.write(f"Total filas leídas: {len(raw)}")
+    st.write("Primeras 6 filas:")
+    for i, row in enumerate(raw[:6]):
+        st.write(f"Fila {i}: {row}")
+
 # ── Procesar datos ─────────────────────────────────────────────────────────
 # Buscar fila de encabezados (la que contiene "Producto")
 header_row_idx = None
