@@ -155,7 +155,10 @@ df = df[df["Producto"].astype(str).str.strip() != ""]
 df = df[df["Producto"].astype(str).str.strip().str.upper() != "TOTALES"]
 
 for col in ["Unidades_Vendidas", "Precio_Unidad", "Stock_Entro"]:
-    df[col] = pd.to_numeric(df[col].astype(str).str.replace(",", "").str.strip(), errors="coerce").fillna(0)
+    df[col] = pd.to_numeric(
+        df[col].astype(str).str.replace(",", "").str.replace("L", "", regex=False).str.replace("l", "", regex=False).str.strip(),
+        errors="coerce"
+    ).fillna(0)
 
 df["Ingresos"]         = df["Unidades_Vendidas"] * df["Precio_Unidad"]
 df["Stock_Disponible"] = df["Stock_Entro"] - df["Unidades_Vendidas"]
