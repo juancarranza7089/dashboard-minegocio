@@ -4,7 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import gspread
 from google.oauth2.service_account import Credentials
-import json
 
 st.set_page_config(
     page_title="Dashboard Mi Negocio",
@@ -78,8 +77,10 @@ st.divider()
 @st.cache_data(ttl=300)  # Refresca cada 5 minutos automáticamente
 def load_from_sheets():
     try:
-        creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
-        creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=SCOPES
+        )
         client = gspread.authorize(creds)
         sheet = client.open(SHEET_NAME).get_worksheet(WORKSHEET_TAB)
         data = sheet.get_all_values()
@@ -92,7 +93,7 @@ with st.spinner("📡 Conectando con Google Sheets..."):
 
 if isinstance(raw, str):
     st.error(f"❌ Error al conectar con Google Sheets: {raw}")
-    st.info("💡 Verifica que el Secret `GOOGLE_CREDENTIALS` esté configurado correctamente en Streamlit Cloud.")
+    st.info("💡 Verifica que el Secret `gcp_service_account` esté configurado correctamente en Streamlit Cloud.")
     st.stop()
 
 # ── Procesar datos ─────────────────────────────────────────────────────────
